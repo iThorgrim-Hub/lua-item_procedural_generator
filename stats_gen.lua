@@ -59,8 +59,6 @@ stats_gen[2] = function(class, subclass, type, max)
     if max == 0 or max == nil or max == false then max = 3 end
 
     local _ = {
-        [0] = {100, 200}, -- ITEM_MOD_MANA
-        [1] = {100, 200}, -- ITEM_MOD_HEALTH
         [12] = {100, 200}, -- ITEM_MOD_DEFENSE_SKILL_RATING
         [13] = {100, 200}, -- ITEM_MOD_DODGE_RATING
         [14] = {100, 200}, -- ITEM_MOD_PARRY_RATING
@@ -89,6 +87,7 @@ stats_gen[2] = function(class, subclass, type, max)
         [37] = {100, 200}, -- ITEM_MOD_EXPERTISE_RATING
         [38] = {100, 200}, -- ITEM_MOD_ATTACK_POWER
         [39] = {100, 200}, -- ITEM_MOD_RANGED_ATTACK_POWER
+        [40] = {100, 200}, -- ITEM_MOD_FERAL_ATTACK_POWER
         [41] = {100, 200}, -- ITEM_MOD_SPELL_HEALING_DONE
         [42] = {100, 200}, -- ITEM_MOD_SPELL_DAMAGE_DONE
         [43] = {100, 200}, -- ITEM_MOD_MANA_REGENERATION
@@ -99,16 +98,15 @@ stats_gen[2] = function(class, subclass, type, max)
         [48] = {100, 200}, -- ITEM_MOD_BLOCK_VALUE
     }
 
-    local temp = {}
-    for k , x in pairs(_) do
-        temp[#temp+1] = k
+    local setMaxStat = math.random(1, max)
+
+    for i = 1, setMaxStat do
+        stats_gen.temp[i] = math.random(12, 48)
+
+        local statValue = math.random(_[stats_gen.temp[i]][1], _[stats_gen.temp[i]][2])
+        stats_gen.temp[i] = {stats_gen.temp[i], statValue}
     end
 
-    for i = 1, max do
-        local choices = math.random(1, #temp)
-
-        stats_gen.temp[temp[choices]] = math.random(_[temp[choices]][1], _[temp[choices]][2])
-    end
     return stats_gen.temp
 end
 

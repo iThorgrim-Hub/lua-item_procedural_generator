@@ -4,6 +4,11 @@ local display_gen = require('display_gen')
 
 math.randomseed(os.time())
 
+function wait(time)
+    local duration = os.time() + time
+    while os.time() < duration do end
+end
+
 local item_gen = {
     config = {
         minimal_entry = 190000
@@ -14,7 +19,7 @@ item_gen.item = {
     ['entry'] = 190000,
     ['class'] = 0,
     ['subclass'] = 0,
-    ['name'] = '',
+    ['name'] = "",
     ['displayId'] = 0,
 
     ['quality'] = 7,
@@ -22,7 +27,7 @@ item_gen.item = {
     ['buyprice'] = 1,
     ['sellprice'] = 1,
 
-    ['statsCours'] = 0,
+    ['statsCount'] = 0,
 
     ['stat_type1'] = 0,
     ['stat_value1'] = 0,
@@ -55,14 +60,6 @@ item_gen.item = {
     ['stat_value10'] = 0,
 }
 
-item_gen.primaryStats = {
-    [1] = {50, 150},
-    [2] = {50, 150},
-    [3] = {50, 150},
-    [4] = {50, 150},
-    [5] = {50, 150}
-}
-
 function item_gen.setStatNbr(entry, nbr)
     if not nbr then nbr = #item_gen.primaryStats end
     return math.random(1, nbr)
@@ -73,26 +70,38 @@ function item_gen.generate(nbr, class, subclass, type, armorType, max_PrimarySta
         for i = 1 , nbr do
             local temp = {}
 
-            local entry = item_gen.config.minimal_entry + nbr
-            item_gen[entry] = {}
+            local entry = item_gen.config.minimal_entry + i
 
-            item_gen[entry].name = name_gen[1](class, subclass, type)
-            item_gen[entry].primaryStats = stats_gen[1](class, subclass, type, max_PrimaryStats)
-            item_gen[entry].secondaryStats = stats_gen[2](class, subclass, type, max_SecondaryStats)
-            item_gen[entry].display = display_gen[1](class, subclass, type)
+            item_gen.item.name = name_gen[1](class, subclass, type)
+            item_gen.item.primaryStats = stats_gen[1](class, subclass, type, max_PrimaryStats)
+            item_gen.item.secondaryStats = stats_gen[2](class, subclass, type, max_SecondaryStats)
+            item_gen.item.display = display_gen[1](class, subclass, type)
+            item_gen.item.quality = 4
+            item_gen.item.ilvl = 150
+            item_gen.item.inventorytype = 2
 
-            for i = 1, #item_gen[entry].primaryStats do
-                temp['stat_type'..i] = item_gen[entry].primaryStats[i][1]
-                temp['stat_value'..i] = item_gen[entry].primaryStats[i][1]
+            for i = 1, #item_gen.item.primaryStats do
+                item_gen.item['stat_type'..i] = item_gen.item.primaryStats[i][1]
+                item_gen.item['stat_value'..i] = item_gen.item.primaryStats[i][2]
             end
 
-            local sql = 'INSERT INTO item_template VALUES ('..entry..', '..class..', '..subclass..')'
-            print(sql)
+            local countSecondary = 0
+            for k , v in pairs(item_gen.item.secondaryStats) do
+                countSecondary = countSecondary +1
+            end
 
+
+            for i = 1, countSecondary do
+                item_gen.item['stat_type'.. #item_gen.item.primaryStats + i] = item_gen.item.secondaryStats[i][1]
+                item_gen.item['stat_value'.. #item_gen.item.primaryStats + i] = item_gen.item.secondaryStats[i][2]
+            end
+
+            item_gen.item['statsCount'] = #item_gen.item.primaryStats + countSecondary
+
+            local sql = 'INSERT INTO item_template (entry, class, subclass, name, displayid, quality, inventorytype, itemlevel, statscount, stat_type1, stat_type2, stat_type3, stat_type4, stat_type5, stat_type6, stat_type7, stat_type8, stat_type9, stat_type10, stat_value1, stat_value2, stat_value3, stat_value4, stat_value5, stat_value6, stat_value7, stat_value8, stat_value9, stat_value10) VALUES ('..entry..', '..class..', '..subclass..', "'..item_gen.item.name..'", '..item_gen.item.display..', '..item_gen.item.quality..', '..item_gen.item.inventorytype..', '..item_gen.item.ilvl..', '..item_gen.item['statsCount']..', '..item_gen.item['stat_type1']..', '..item_gen.item['stat_type2']..', '..item_gen.item['stat_type3']..', '..item_gen.item['stat_type4']..', '..item_gen.item['stat_type5']..', '..item_gen.item['stat_type6']..', '..item_gen.item['stat_type7']..', '..item_gen.item['stat_type8']..', '..item_gen.item['stat_type9']..', '..item_gen.item['stat_type10']..', '..item_gen.item['stat_value1']..', '..item_gen.item['stat_value2']..', '..item_gen.item['stat_value3']..', '..item_gen.item['stat_value4']..', '..item_gen.item['stat_value5']..', '..item_gen.item['stat_value6']..', '..item_gen.item['stat_value7']..', '..item_gen.item['stat_value8']..', '..item_gen.item['stat_value9']..', '..item_gen.item['stat_value10']..')'
+            print(item_gen.item.name)
         end
     end
 end
 
--- nbr_object, class, subclass, type
--- type_Armure, max_PrimaryStats, max_SecondaryStats
-item_gen.generate(1, 4, 0, 1, 0, 3, 3)
+item_gen.generate(50, 4, 0, 1, 0, 5, 4)
